@@ -6,11 +6,11 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from api import users, roles
+from api.v1 import films, persons, genres
 from core.config import settings
 from core.logger import LOGGING
 from db import db_cache, db_storage
 from db.elastic.EsStorage import EsStorage
-from db.postgres import create_database, purge_database
 from db.redis.redis_cache import RedisCache
 
 
@@ -38,6 +38,11 @@ app = FastAPI(
 
 app.include_router(users.router, prefix='/api/users', tags=['users'])
 app.include_router(roles.router, prefix='/api/roles', tags=['roles'])
+
+app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
+app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
+app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
+
 
 if __name__ == '__main__':
     uvicorn.run(
