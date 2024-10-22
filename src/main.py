@@ -2,13 +2,14 @@ import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from api import users, roles
-from core.config import settings, Settings
+from core.config import settings
 from core.logger import LOGGING
-from db import db_cache
+from db import db_cache, db_storage
+from db.elastic.EsStorage import EsStorage
 from db.postgres import create_database, purge_database
 from db.redis.redis_cache import RedisCache
 
@@ -16,10 +17,14 @@ from db.redis.redis_cache import RedisCache
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_cache.cache = RedisCache()
+    db_storage.storage = EsStorage()
+    await db_storage.storage.open()
 
     yield
 
     await db_cache.cache.close()
+    if db_storage.storage:
+        await db_storage.storage.close()
 
 
 app = FastAPI(

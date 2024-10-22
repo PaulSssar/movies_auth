@@ -1,0 +1,9 @@
+{
+    "mappings": {
+        "properties": {
+            "title": {"type": "text"},
+            "description": {"type": "text"},
+            "rating": {"type": "float"}
+        }
+    }
+}
