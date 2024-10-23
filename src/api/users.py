@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from http import HTTPStatus
 from typing import Optional, Annotated, Any
@@ -28,6 +29,8 @@ class UserInDB(BaseModel):
     id: UUID
     first_name: str
     last_name: str
+    login: str
+    password: str
 
     class Config:
         from_attributes = True
@@ -81,9 +84,9 @@ async def signin_history(
 ) -> Any:
     response = await service.login_history(login, page_number, page_size)
     return [UserSignin(
-                login_at=user_login.login_at,
-                signin_data=user_login.signin_data
-            )  for user_login in response]
+        login_at=user_login.login_at,
+        signin_data=user_login.signin_data
+    ) for user_login in response]
 
 
 @router.post(

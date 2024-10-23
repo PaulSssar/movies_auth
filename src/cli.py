@@ -7,12 +7,14 @@ import asyncio
 
 app = typer.Typer()
 
+
 @app.command()
 def create_superuser(username: str,
                      password: str,
                      first_name: str = "",
                      last_name: str = ""):
     asyncio.run(_create_superuser(username, password, first_name, last_name))
+
 
 async def _create_superuser(username: str,
                             password: str,
@@ -36,6 +38,7 @@ async def _create_superuser(username: str,
             typer.echo(f"Error creating superuser: {str(e)}")
         finally:
             await session.close()
+
 
 if __name__ == "__main__":
     app()
