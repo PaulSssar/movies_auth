@@ -137,9 +137,19 @@ class UserService:
                 )
                 return {'data': 'token expired!'}
 
+            result = await self.pg_session.execute(
+                select(User).filter_by(login=payload.get('user')).options(selectinload(User.roles)))
+            user = result.scalars().first()
+
             return {
                 'user': payload.get('user'),
-                'roles': payload.get('roles'),
+                'expire': payload.get('expire'),
+                'id': str(user.id),
+                'email': user.login,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_superuser': True,#user.is_superuser,
+                'roles': [role.name for role in user.roles],
                 'jti': payload.get('jti')
             }
 

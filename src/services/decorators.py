@@ -6,6 +6,7 @@ from typing import Callable
 from models.user import User
 from services.users import get_current_user
 
+
 def superuser_required(func: Callable) -> Callable:
     @wraps(func)
     async def wrapper(*args, **kwargs):

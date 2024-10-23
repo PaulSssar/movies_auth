@@ -1,5 +1,5 @@
 services:
-  fastapi:
+  auth:
     build:
       context: .
     env_file:
@@ -65,9 +65,12 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./configs:/etc/nginx/conf.d:ro
+      - static:/opt/app/static/
+      - media:/opt/app/media/
 
     depends_on:
-      - fastapi
+      - auth
+      - admin
     ports:
       - "80:80"
 
@@ -81,9 +84,27 @@ services:
       db:
         condition: service_healthy
 
+  admin:
+    build:
+      context: django-admin/
+      dockerfile: Dockerfile
+    env_file:
+      - configs/.env.dev
+    expose:
+      - "8001"
+    volumes:
+      - media:/opt/app/media
+      - static:/opt/app/static
+    depends_on:
+      db:
+        condition: service_healthy
+
 
 volumes:
   db_data:
+  media:
+  static:
   es_data:
 #    external: true
 #    name: es-vol
+

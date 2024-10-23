@@ -24,7 +24,7 @@ class RoleInDB(BaseModel):
     description: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 @router.post("/roles/", response_model=RoleInDB, status_code=HTTPStatus.CREATED)
