@@ -14,7 +14,16 @@ class Settings(BaseSettings):
     redis_host: str = Field('redis', alias='REDIS_HOST')
     redis_port: int = Field(6379, alias='REDIS_PORT')
 
+    elastic_host: str = Field('elasticsearch', alias='ELASTIC_HOST')
+    elastic_port: int = Field(9200, alias='ELASTIC_PORT')
+
+    elastic_schema: str = 'http://'
+
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    film_index: str = 'movies'
+    genre_index: str = 'genres'
+    person_index: str = 'persons'
 
     cache_expire_in_seconds: int = 5
 

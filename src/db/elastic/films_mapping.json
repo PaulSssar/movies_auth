@@ -1,0 +1,35 @@
+{
+    "mappings": {
+        "properties": {
+            "id": {"type": "keyword"},
+            "title": {"type": "text"},
+            "description": {"type": "text"},
+            "created": {"type": "date"},
+            "imdb_rating": {"type": "float"},
+            "genres": {"type": "nested",
+                       "properties": {
+                           "id": {"type": "keyword"},
+                           "title": {"type": "text"}
+                       }
+                       },
+            "directors": {"type": "nested",
+                          "properties": {
+                              "id": {"type": "keyword"},
+                              "name": {"type": "text"}
+                          }
+                          },
+            "actors": {"type": "nested",
+                       "properties": {
+                           "id": {"type": "keyword"},
+                           "name": {"type": "text"}
+                       }
+                       },
+            "writers": {"type": "nested",
+                        "properties": {
+                            "id": {"type": "keyword"},
+                            "name": {"type": "text"}
+                        }
+                        }
+        }
+    }
+}

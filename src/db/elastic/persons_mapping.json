@@ -1,0 +1,9 @@
+{
+    "mappings": {
+        "properties": {
+            "name": {"type": "text"},
+            "role": {"type": "text"},
+            "film_ids": {"type": "keyword"}
+        }
+    }
+}

@@ -5,8 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
+from models import User
 from services.roles import RoleService, get_role_service
 from services.decorators import superuser_required
+from services.users import get_current_user
 
 router = APIRouter()
 
@@ -30,6 +32,7 @@ class RoleInDB(BaseModel):
 async def create_role(
     role: RoleCreate,
     role_service: RoleService = Depends(get_role_service),
+    current_user: User =Depends(get_current_user)
 ):
     new_role = await role_service.create_role(name=role.name, description=role.description)
     return new_role
@@ -63,6 +66,7 @@ async def update_role(
     role_id: UUID,
     role: RoleCreate,
     role_service: RoleService = Depends(get_role_service),
+    current_user: User = Depends(get_current_user)
 ):
     updated_role = await role_service.update_role(role_id=role_id, name=role.name, description=role.description)
     return updated_role
@@ -73,5 +77,6 @@ async def update_role(
 async def delete_role(
     role_id: UUID,
     role_service: RoleService = Depends(get_role_service),
+    current_user: User = Depends(get_current_user)
 ):
     await role_service.delete_role(role_id=role_id)
