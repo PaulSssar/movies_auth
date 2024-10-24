@@ -2,8 +2,13 @@ import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
 from api import users, roles
 from api.v1 import films, persons, genres
@@ -27,6 +32,21 @@ async def lifespan(app: FastAPI):
         await db_storage.storage.close()
 
 
+def configure_tracer() -> None:
+    trace.set_tracer_provider(TracerProvider())
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(
+            JaegerExporter(
+                agent_host_name=settings.jaeger_host,
+                agent_port=settings.jaeger_port,
+            )
+        )
+    )
+    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
+
+configure_tracer()
+
 app = FastAPI(
     title=settings.project_name,
     docs_url='/api/openapi',
@@ -34,6 +54,16 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan
 )
+FastAPIInstrumentor.instrument_app(app)
+
+
+@app.middleware('http')
+async def before_request(request: Request, call_next):
+    response = await call_next(request)
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
+    return response
 
 
 app.include_router(users.router, prefix='/api/users', tags=['users'])
@@ -42,7 +72,6 @@ app.include_router(roles.router, prefix='/api/roles', tags=['roles'])
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
 app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
 app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
-
 
 if __name__ == '__main__':
     uvicorn.run(

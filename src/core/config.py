@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     refresh_token_lifetime: int = Field(14400, alias='REFRESH_TOKEN_LIFETIME')
     algorithm: str = Field('HS256', alias='ALGORITHM')
 
+    jaeger_host: str = Field('127.0.0.1', alias='JAEGER_HOST')
+    jaeger_port: int = Field(6831, alias='JAEGER_PORT')
+
     @property
     def dsn(self) -> dict:
         return {
@@ -49,7 +52,7 @@ class Settings(BaseSettings):
             "options": "-c search_path=content",
         }
 
-    class Config:
+    class ConfigDict:
         env_file = '.env'
         env_file_encoding = 'utf-8'
 
