@@ -180,11 +180,13 @@ def get_user_service(
     return UserService(pg_session, redis)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme),
-                           session: AsyncSession = Depends(get_session)
-                           ) -> User:
+async def get_current_user(
+        token: str = Depends(oauth2_scheme),
+        session: AsyncSession = Depends(get_session),
+        user_service = Depends(get_user_service)
+) -> User:
     try:
-        data = await UserService.decode_token_jwt(token)
+        data = await user_service.decode_token_jwt(token)
 
         user_login = data.get('user')
         if user_login is None:

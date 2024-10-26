@@ -4,7 +4,10 @@ from typing import Optional, Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from models import User
+from services.decorators import authentication_required
 from services.film import FilmService, get_film_service
+from services.users import get_current_user
 
 router = APIRouter()
 
@@ -25,12 +28,14 @@ class Films(BaseModel):
 
 
 @router.get('/', response_model=Films)
+@authentication_required
 async def films_list(
         page_number: Annotated[int, Query(title="Page number", ge=0)] = 1,
         page_size: Annotated[int, Query(title="Page size", ge=2, le=50)] = 50,
         sort: str = Query(''),
         order: str = Query(''),
-        film_service: FilmService = Depends(get_film_service)
+        film_service: FilmService = Depends(get_film_service),
+        current_user: User =Depends(get_current_user)
 ) -> Films:
     films = await film_service.get_items(
         page_size=page_size,
@@ -39,12 +44,12 @@ async def films_list(
         order=order
     )
     return Films(
-        result=[FilmItem(id=film.id,
-                         title=film.title) for film in films]
+        result=[FilmItem(id=film.id, title=film.title) for film in films]
     )
 
 
 @router.get('/search', response_model=Films)
+@authentication_required
 async def film_search(
         page_number: Annotated[int, Query(title="Page number", ge=0)] = 1,
         page_size: Annotated[int, Query(title="Page size", ge=2, le=50)] = 50,
@@ -52,6 +57,7 @@ async def film_search(
         query: str = Query(None),
         film_service: FilmService = Depends(get_film_service),
         order: str = Query(''),
+        current_user: User =Depends(get_current_user)
 ) -> Films:
     films = await film_service.get_items(
         query=query,
@@ -61,14 +67,20 @@ async def film_search(
         order=order
     )
     return Films(
-        result=[FilmItem(id=film.id,
-                         title=film.title) for film in films]
+        result=[FilmItem(id=film.id, title=film.title) for film in films]
     )
 
 
 @router.get('/{film_id}', response_model=Film)
-async def film_details(film_id: str, film_service: FilmService = Depends(get_film_service)) -> Film:
+@authentication_required
+async def film_details(
+        film_id: str,
+        film_service: FilmService = Depends(get_film_service),
+        current_user: User =Depends(get_current_user)
+) -> Film:
     film = await film_service.get_by_id(film_id)
     if not film:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='film not found'
+        )
     return Film(id=film_id, title=film.title, description=film.description)

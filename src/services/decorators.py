@@ -39,3 +39,31 @@ def superuser_required(func: Callable) -> Callable:
         wrapper.__signature__ = original_sig
 
     return wrapper
+
+
+def authentication_required(func: Callable) -> Callable:
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        current_user: User = kwargs.get('current_user')
+        if not current_user:
+            raise HTTPException(
+                status_code=HTTPStatus.UNAUTHORIZED,
+                detail="Not authenticated"
+            )
+
+    original_sig = signature(func)
+    parameters = list(original_sig.parameters.values())
+
+    if 'current_user' not in original_sig.parameters:
+        current_user_param = Parameter(
+            'current_user',
+            kind=Parameter.KEYWORD_ONLY,
+            annotation=User,
+            default=Depends(get_current_user)
+        )
+        parameters.append(current_user_param)
+        wrapper.__signature__ = original_sig.replace(parameters=parameters)
+    else:
+        wrapper.__signature__ = original_sig
+
+    return wrapper
