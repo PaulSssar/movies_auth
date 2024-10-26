@@ -11,7 +11,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExport
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
 from api import users, roles
-from api.v1 import films, persons, genres
+from api.v1 import films, persons, genres, oauth
 from core.config import settings
 from core.logger import LOGGING
 from db import db_cache, db_storage
@@ -72,6 +72,8 @@ app.include_router(roles.router, prefix='/api/roles', tags=['roles'])
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
 app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
 app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
+
+app.include_router(oauth.router, prefix='/api/v1/oauth', tags=['oauth'])
 
 if __name__ == '__main__':
     uvicorn.run(
