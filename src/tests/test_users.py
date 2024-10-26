@@ -18,6 +18,7 @@ async def test_signup_success(client: AsyncClient):
     assert data["first_name"] == "Test"
     assert data["last_name"] == "User"
 
+
 @pytest.mark.asyncio
 async def test_signup_duplicate_user(client: AsyncClient):
     await client.post(
@@ -40,6 +41,7 @@ async def test_signup_duplicate_user(client: AsyncClient):
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "User with this login already exists."
+
 
 @pytest.mark.asyncio
 async def test_signin_success(client: AsyncClient):
@@ -64,6 +66,7 @@ async def test_signin_success(client: AsyncClient):
     assert "token" in data
     assert "refresh_token" in data
 
+
 @pytest.mark.asyncio
 async def test_signin_wrong_password(client: AsyncClient):
     await client.post(
@@ -84,6 +87,7 @@ async def test_signin_wrong_password(client: AsyncClient):
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect password"
+
 
 @pytest.mark.asyncio
 async def test_signin_history(client: AsyncClient):
@@ -112,6 +116,7 @@ async def test_signin_history(client: AsyncClient):
     assert isinstance(data, list)
     assert len(data) >= 1  # At least one login event
 
+
 @pytest.mark.asyncio
 async def test_check_token_valid(client: AsyncClient):
     await client.post(
@@ -138,12 +143,14 @@ async def test_check_token_valid(client: AsyncClient):
     data = response.json()
     assert data["user"] == "tokenuser"
 
+
 @pytest.mark.asyncio
 async def test_check_token_invalid(client: AsyncClient):
     headers = {"Authorization": "Bearer invalidtoken"}
     response = await client.get("/check_token", headers=headers)
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid token!"
+
 
 @pytest.mark.asyncio
 async def test_refresh_token_success(client: AsyncClient):
@@ -172,12 +179,14 @@ async def test_refresh_token_success(client: AsyncClient):
     assert "token" in data
     assert "refresh_token" in data
 
+
 @pytest.mark.asyncio
 async def test_refresh_token_invalid(client: AsyncClient):
     headers = {"Authorization": "Bearer invalidtoken"}
     response = await client.post("/refresh", headers=headers)
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid token!"
+
 
 @pytest.mark.asyncio
 async def test_logout_success(client: AsyncClient):
@@ -212,6 +221,7 @@ async def test_logout_success(client: AsyncClient):
         "Invalid token!",
         "Token expired!",
     ]
+
 
 @pytest.mark.asyncio
 async def test_logout_invalid_token(client: AsyncClient):

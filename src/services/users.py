@@ -148,7 +148,7 @@ class UserService:
                 'email': user.login,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'is_superuser': True,#user.is_superuser,
+                'is_superuser': user.is_superuser,
                 'roles': [role.name for role in user.roles],
                 'jti': payload.get('jti')
             }
