@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     jaeger_host: str = Field('127.0.0.1', alias='JAEGER_HOST')
     jaeger_port: int = Field(6831, alias='JAEGER_PORT')
 
+    yandex_client_id: str = Field(env='YANDEX_CLIENT_ID')
+    yandex_client_secret: str = Field(env='YANDEX_CLIENT_SECRET')
+    yandex_redirect_uri: str = Field(env='YANDEX_REDIRECT_URI')
+
     @property
     def dsn(self) -> dict:
         return {

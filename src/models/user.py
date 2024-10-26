@@ -29,16 +29,21 @@ class User(Base):
         'Role', secondary=user_roles_table, back_populates='users'
     )
     user_logins = relationship('UserLogin', back_populates='user')
+    yandex_id = Column(String(255), unique=True, nullable=True)
+    yandex_email = Column(String(255), unique=True, nullable=True)
 
     def __init__(
             self, login: str, password: str, first_name: str, last_name: str,
-            is_superuser: bool = False
+            is_superuser: bool = False, yandex_id: str = None,
+            yandex_email: str = None
     ) -> None:
         self.login = login
         self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
         self.is_superuser = is_superuser
+        self.yandex_id = yandex_id
+        self.yandex_email = yandex_email
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
