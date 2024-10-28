@@ -4,6 +4,10 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
+from redis.asyncio import Redis
+
 from opentelemetry.sdk.resources import Resource
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -22,6 +26,10 @@ from db.redis.redis_cache import RedisCache
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis = Redis(host=settings.redis_host, port=settings.redis_port,
+                  db=0, decode_responses=True)
+    await FastAPILimiter.init(redis)
+
     db_cache.cache = RedisCache()
     db_storage.storage = EsStorage()
     await db_storage.storage.open()

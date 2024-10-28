@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -12,7 +13,8 @@ from src.services.oauth.oauth_service import  OAuthService
 router = APIRouter()
 
 
-@router.get("/login")
+@router.get("/login",
+            dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def login():
     provider_name = settings.authorize_provider
     try:
@@ -22,7 +24,8 @@ async def login():
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/callback")
+@router.get("/callback",
+            dependencies=[Depends(RateLimiter(times=5, seconds=120))])
 async def callback(request: Request,
                           db: AsyncSession = Depends(get_session)):
     code = request.query_params.get("code")

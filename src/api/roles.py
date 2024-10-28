@@ -3,6 +3,7 @@ from typing import Optional, List
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi_limiter.depends import RateLimiter
 from pydantic import BaseModel
 
 from models import User
@@ -27,18 +28,20 @@ class RoleInDB(BaseModel):
         from_attributes = True
 
 
-@router.post("/roles/", response_model=RoleInDB, status_code=HTTPStatus.CREATED)
+@router.post("/roles/", response_model=RoleInDB, status_code=HTTPStatus.CREATED,
+             dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 @superuser_required
 async def create_role(
     role: RoleCreate,
     role_service: RoleService = Depends(get_role_service),
-    current_user: User =Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     new_role = await role_service.create_role(name=role.name, description=role.description)
     return new_role
 
 
-@router.get("/roles/", response_model=List[RoleInDB])
+@router.get("/roles/", response_model=List[RoleInDB],
+            dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def get_roles(
     role_service: RoleService = Depends(get_role_service),
 ):
@@ -46,7 +49,8 @@ async def get_roles(
     return roles
 
 
-@router.get("/roles/{role_id}", response_model=RoleInDB)
+@router.get("/roles/{role_id}", response_model=RoleInDB,
+            dependencies=[Depends(RateLimiter(times=15, seconds=60))])
 async def get_role(
     role_id: UUID,
     role_service: RoleService = Depends(get_role_service),
@@ -60,7 +64,8 @@ async def get_role(
     return role
 
 
-@router.put("/roles/{role_id}", response_model=RoleInDB)
+@router.put("/roles/{role_id}", response_model=RoleInDB,
+            dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 @superuser_required
 async def update_role(
     role_id: UUID,
@@ -72,7 +77,8 @@ async def update_role(
     return updated_role
 
 
-@router.delete("/roles/{role_id}", status_code=HTTPStatus.NO_CONTENT)
+@router.delete("/roles/{role_id}", status_code=HTTPStatus.NO_CONTENT,
+               dependencies=[Depends(RateLimiter(times=3, seconds=60))])
 @superuser_required
 async def delete_role(
     role_id: UUID,

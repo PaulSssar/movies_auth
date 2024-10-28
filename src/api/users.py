@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
+from fastapi_limiter.depends import RateLimiter
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,7 +51,8 @@ class Token(BaseModel):
     token: Optional[str]
 
 
-@router.post('/signup', response_model=UserInDB, status_code=HTTPStatus.CREATED)
+@router.post('/signup', response_model=UserInDB, status_code=HTTPStatus.CREATED,
+             dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def create_user(
         user_create: UserCreate, db: AsyncSession = Depends(get_session)
 ):
@@ -63,7 +65,7 @@ async def create_user(
 
 
 @router.post(
-    path='/signin',
+    path='/signin', dependencies=[Depends(RateLimiter(times=5, seconds=60))]
 )
 async def login_user(
         user_login: UserLogin,
@@ -74,7 +76,8 @@ async def login_user(
 
 
 @router.get(
-    path='/signin_history', response_model=list[UserSignin]
+    path='/signin_history', response_model=list[UserSignin],
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))]
 )
 async def signin_history(
         login: str,
@@ -90,7 +93,8 @@ async def signin_history(
 
 
 @router.post(
-    path='/check_token'
+    path='/check_token',
+    dependencies=[Depends(RateLimiter(times=15, seconds=60))]
 )
 async def check_token(
         token: Token,
@@ -103,6 +107,7 @@ async def check_token(
 
 @router.post(
     path='/refresh',
+    dependencies=[Depends(RateLimiter(times=5, seconds=120))]
 )
 async def refresh_token(
         token: Token,
