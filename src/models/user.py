@@ -22,13 +22,6 @@ class Continent(str, enum.Enum):
     ANTARCTICA = 'Antarctica'
 
 
-def create_partition(target, connection, **kwargs) -> None:
-    for continent in Continent:
-        connection.execute(
-            text(
-                f"""CREATE TABLE IF NOT EXISTS "users_{continent.replace(' ', '').lower()}" PARTITION OF "users" FOR VALUES IN ('{continent}')"""
-            ))
-
 
 class UserSocial(Base):
     __tablename__ = 'users_socials'
