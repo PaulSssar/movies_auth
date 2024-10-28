@@ -30,6 +30,39 @@ def create_partition(target, connection, **kwargs) -> None:
             ))
 
 
+class UserSocial(Base):
+    __tablename__ = 'users_socials'
+    __table_args__ = (UniqueConstraint('user_id', 'provider'),)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    provider = Column(String(50), nullable=False, index=True)
+    provider_user_id = Column(String(255), nullable=False, index=True)
+    access_token = Column(String(255), nullable=True)
+    refresh_token = Column(String(255), nullable=True)
+    token_expiry = Column(DateTime, nullable=True)
+
+    user = relationship('User', back_populates='social_accounts')
+
+    def __init__(self, user_id, provider, provider_user_id, access_token=None,
+                 refresh_token=None, token_expiry=None):
+        self.user_id = user_id
+        self.provider = provider
+        self.provider_user_id = provider_user_id
+        self.access_token = access_token
+        self.refresh_token = refresh_token
+        self.token_expiry = token_expiry
+
+    def update_tokens(self, access_token=None, refresh_token=None,
+                      token_expiry=None):
+        if access_token:
+            self.access_token = access_token
+        if refresh_token:
+            self.refresh_token = refresh_token
+        if token_expiry:
+            self.token_expiry = token_expiry
+
+
 class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
