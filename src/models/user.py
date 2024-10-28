@@ -73,21 +73,18 @@ class User(Base):
         'Role', secondary=user_roles_table, back_populates='users'
     )
     user_logins = relationship('UserLogin', back_populates='user')
-    user_id = Column(String(255), unique=True, nullable=True)
-    user_email = Column(String(255), unique=True, nullable=True)
+
+    social_accounts = relationship('UserSocial', back_populates='user')
 
     def __init__(
             self, login: str, password: str, first_name: str, last_name: str,
-            is_superuser: bool = False, user_id: str = None,
-            user_email: str = None
+            is_superuser: bool = False
     ) -> None:
         self.login = login
         self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
         self.is_superuser = is_superuser
-        self.user_id = user_id
-        self.user_email = user_email
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
