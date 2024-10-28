@@ -58,30 +58,30 @@ async def prepare_db(event_loop):
         command.upgrade(alembic_cfg, "head")
     yield engine
 
-    # async with engine.begin() as conn:
-    #     query = text("INSERT INTO public.users(id, login, password, first_name, last_name, created_at, is_superuser)\n"
-    #                  "VALUES (gen_random_uuid(), :adm_login, :adm_pass, 'Admin', 'User', NOW(), true),\n"
-    #                  "(gen_random_uuid(), :reg_login, :reg_pass, 'Admin', 'User', NOW(), false)")
-    #     await conn.execute(query, {
-    #         'adm_login': TEST_ADM_LOGIN,
-    #         'adm_pass': generate_password_hash(TEST_ADM_PASS),
-    #         'reg_login': TEST_USR_LOGIN,
-    #         'reg_pass': generate_password_hash(TEST_USR_PASS),
-    #     })
-    #
-    # yield engine
-    #
-    # async with engine_adm.connect() as conn:
-    #     query = text("SELECT 1 FROM pg_database WHERE datname = :db_name")
-    #     result = await conn.execute(query, {'db_name': settings.postgres_db})
-    #     exists = result.fetchall()
-    #     if exists:
-    #         query = text("SELECT pg_terminate_backend(pg_stat_activity.pid)\n"
-    #                      "FROM pg_stat_activity\n"
-    #                      "WHERE pg_stat_activity.datname = :db_name AND pid <> pg_backend_pid();\n")
-    #         await conn.execute(query, {'db_name': settings.postgres_db})
-    #
-    #         await conn.execute(text(f"DROP DATABASE {settings.postgres_db}"))
+    async with engine.begin() as conn:
+        query = text("INSERT INTO public.users(id, login, password, first_name, last_name, created_at, is_superuser)\n"
+                     "VALUES (gen_random_uuid(), :adm_login, :adm_pass, 'Admin', 'User', NOW(), true),\n"
+                     "(gen_random_uuid(), :reg_login, :reg_pass, 'Admin', 'User', NOW(), false)")
+        await conn.execute(query, {
+            'adm_login': TEST_ADM_LOGIN,
+            'adm_pass': generate_password_hash(TEST_ADM_PASS),
+            'reg_login': TEST_USR_LOGIN,
+            'reg_pass': generate_password_hash(TEST_USR_PASS),
+        })
+
+    yield engine
+
+    async with engine_adm.connect() as conn:
+        query = text("SELECT 1 FROM pg_database WHERE datname = :db_name")
+        result = await conn.execute(query, {'db_name': settings.postgres_db})
+        exists = result.fetchall()
+        if exists:
+            query = text("SELECT pg_terminate_backend(pg_stat_activity.pid)\n"
+                         "FROM pg_stat_activity\n"
+                         "WHERE pg_stat_activity.datname = :db_name AND pid <> pg_backend_pid();\n")
+            await conn.execute(query, {'db_name': settings.postgres_db})
+
+            await conn.execute(text(f"DROP DATABASE {settings.postgres_db}"))
 
 
 # fixture for the FastAPI test client

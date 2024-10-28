@@ -65,13 +65,6 @@ class UserSocial(Base):
 
 class User(Base):
     __tablename__ = 'users'
-    __table_args__ = (
-        UniqueConstraint('login', 'continent'),
-        {
-            'postgresql_partition_by': 'LIST (continent)',
-            'listeners': [('after_create', create_partition)],
-        }
-    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, unique=True, default=uuid.uuid4, nullable=False)
     login = Column(String(255), nullable=False)
