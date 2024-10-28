@@ -25,10 +25,7 @@ class CustomBackend(BaseBackend):
             return None
 
         payload = {'token': data.get('token')}
-        logging.info(f'_______________________________________________________{payload}')
         data = self.get_data_from_auth_service('check_token', payload)
-
-        logging.info(f'_______________________________________________________{data}')
 
         user, created = User.objects.get_or_create(id=data['id'], )
         user.email = data.get('email')
@@ -49,7 +46,13 @@ class CustomBackend(BaseBackend):
     @staticmethod
     def get_data_from_auth_service(url_prefix, payload):
         url = settings.AUTH_API_LOGIN_URL + url_prefix
-        response = requests.post(url, data=json.dumps(payload))
-        if response.status_code != http.HTTPStatus.OK:
+
+        try:
+            response = requests.post(url, data=json.dumps(payload), timeout=30)
+            if response.status_code != http.HTTPStatus.OK:
+                return None
+            return response.json()
+
+        except (ConnectionError, TimeoutError):
             return None
-        return response.json()
+
