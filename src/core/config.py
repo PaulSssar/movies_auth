@@ -2,11 +2,16 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 import os
 from logging import config as logging_config
+from starlette.config import Config
+from authlib.integrations.starlette_client import OAuth
 
 from core.logger import LOGGING
 
 logging_config.dictConfig(LOGGING)
 
+env_file_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"
+)
 
 class Settings(BaseSettings):
     project_name: str = Field('movies_auth', alias='PROJECT_NAME')
@@ -41,9 +46,12 @@ class Settings(BaseSettings):
     jaeger_host: str = Field('127.0.0.1', alias='JAEGER_HOST')
     jaeger_port: int = Field(6831, alias='JAEGER_PORT')
 
-    yandex_client_id: str = Field(env='YANDEX_CLIENT_ID')
-    yandex_client_secret: str = Field(env='YANDEX_CLIENT_SECRET')
-    yandex_redirect_uri: str = Field(env='YANDEX_REDIRECT_URI')
+    client_id: str = Field(None, alias="CLIENT_ID")
+    client_secret: str = Field(None, alias="CLIENT_SECRET")
+    redirect_uri: str = Field(None, alias="REDIRECT_URI")
+    authorize_url: str = Field(None, alias="AUTHORIZE_URL")
+    access_token_url: str = Field(None, alias="ACCESS_TOKEN_URL")
+    authorize_provider: str = Field("yandex", alias="AUTHORIZE_PROVIDER")
 
     @property
     def dsn(self) -> dict:
@@ -62,3 +70,14 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+config = Config(env_file_path)
+oauth = OAuth(config)
+oauth.register(
+    name="external",
+    client_id=settings.client_id,
+    client_secret=settings.client_secret,
+    authorize_url=settings.authorize_url,
+    access_token_url=settings.access_token_url,
+    redirect_uri=settings.redirect_uri
+)
